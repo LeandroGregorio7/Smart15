@@ -5,6 +5,7 @@ import {
   computePluginBundleHash,
   getPluginBundlePin,
   removePluginBundlePin,
+  shouldVerifyPluginBundleIntegrity,
   verifyPluginBundleIntegrity,
 } from "../apps/geolibre-desktop/src/lib/plugin-integrity";
 
@@ -73,5 +74,21 @@ describe("plugin bundle integrity pinning", () => {
     assert.equal(getPluginBundlePin(url), null);
     const afterRemoval = await verifyPluginBundleIntegrity(url, tampered);
     assert.equal(afterRemoval.status, "pinned-first-use");
+  });
+
+  it("skips URL pins for app-bundled plugins but verifies remote plugins", () => {
+    const bundledUrl =
+      "http://localhost:8080/plugins/smart15-orquestrador/plugin.json";
+    const remoteUrl = "https://plugins.example.com/plugin.json";
+    const bundledUrls = new Set([bundledUrl]);
+
+    assert.equal(
+      shouldVerifyPluginBundleIntegrity(bundledUrl, bundledUrls),
+      false,
+    );
+    assert.equal(
+      shouldVerifyPluginBundleIntegrity(remoteUrl, bundledUrls),
+      true,
+    );
   });
 });

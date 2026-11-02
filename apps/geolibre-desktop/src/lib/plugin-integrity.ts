@@ -117,7 +117,7 @@ export type PluginBundleIntegrity =
  *
  * First sight of a URL pins it and allows the load (the user added the URL to
  * settings). A matching hash is allowed. A differing hash is reported as
- * `"changed"` and NOT re-pinned, so the caller can block the automatic load and
+ * "changed" and NOT re-pinned, so the caller can block the automatic load and
  * require an explicit reload.
  *
  * @param url - The plugin manifest URL that produced the bundle.
@@ -138,4 +138,15 @@ export async function verifyPluginBundleIntegrity(
     return { status: "unchanged" };
   }
   return { status: "changed", pinnedHash, currentHash };
+}
+
+/**
+ * Bundled drop-ins are trusted as part of the app build and must not be blocked
+ * by a persisted URL pin when the deployer ships a newer app version.
+ */
+export function shouldVerifyPluginBundleIntegrity(
+  manifestUrl: string,
+  bundledManifestUrls: ReadonlySet<string>,
+): boolean {
+  return !bundledManifestUrls.has(manifestUrl);
 }
